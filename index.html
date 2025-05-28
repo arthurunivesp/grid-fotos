@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Grid de Fotos</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Biblioteca html2canvas para exportação de imagens -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gerador de Grid de Fotos</h1>
+            <p>Crie grids personalizados para suas fotos em formato retrato ou quadrado</p>
+        </header>
+
+        <div class="config-panel">
+            <div class="config-section">
+                <h2>Configurações do Grid</h2>
+                
+                <div class="form-group">
+                    <label for="grid-width">Largura do Grid (cm):</label>
+                    <input type="number" id="grid-width" min="1" max="100" step="0.1" value="18">
+                </div>
+                
+                <div class="form-group">
+                    <label for="grid-height">Altura do Grid (cm):</label>
+                    <input type="number" id="grid-height" min="1" max="100" step="0.1" value="18">
+                </div>
+                
+                <div class="form-group">
+                    <label for="photo-count">Quantidade de Fotos:</label>
+                    <input type="number" id="photo-count" min="1" max="100" value="9">
+                </div>
+                
+                <div class="form-group">
+                    <label for="photo-format">Formato das Fotos:</label>
+                    <select id="photo-format">
+                        <option value="portrait-3x4">Retrato 3x4</option>
+                        <option value="portrait-5x7">Retrato 5x7</option>
+                        <option value="square">Quadrado</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+                
+                <div id="custom-format" class="hidden">
+                    <div class="form-group">
+                        <label for="custom-width">Largura (cm):</label>
+                        <input type="number" id="custom-width" min="1" max="50" step="0.1" value="3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="custom-height">Altura (cm):</label>
+                        <input type="number" id="custom-height" min="1" max="50" step="0.1" value="4">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="grid-spacing">Espaçamento entre fotos (mm):</label>
+                    <input type="number" id="grid-spacing" min="0" max="50" value="2">
+                </div>
+                
+                <div class="form-group">
+                    <label for="grid-layout">Layout do Grid:</label>
+                    <select id="grid-layout">
+                        <option value="auto">Automático</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+                
+                <div id="custom-layout" class="hidden">
+                    <div class="form-group">
+                        <label for="grid-rows">Linhas:</label>
+                        <input type="number" id="grid-rows" min="1" max="20" value="3">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grid-columns">Colunas:</label>
+                        <input type="number" id="grid-columns" min="1" max="20" value="3">
+                    </div>
+                </div>
+                
+                <button id="generate-grid" class="btn primary">Gerar Grid</button>
+            </div>
+            
+            <div class="config-section">
+                <h2>Opções de Exportação</h2>
+                
+                <div class="form-group">
+                    <label for="export-format">Formato:</label>
+                    <select id="export-format">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPEG</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="export-quality">Qualidade (apenas JPEG):</label>
+                    <input type="range" id="export-quality" min="0.1" max="1.0" step="0.1" value="0.9">
+                    <span id="quality-value">90%</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="export-scale">Escala:</label>
+                    <select id="export-scale">
+                        <option value="1">1x (Normal)</option>
+                        <option value="2" selected>2x (Alta Resolução)</option>
+                        <option value="3">3x (Ultra HD)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="export-filename">Nome do arquivo:</label>
+                    <input type="text" id="export-filename" value="meu_grid_de_fotos">
+                </div>
+                
+                <button id="export-grid" class="btn secondary" disabled>Exportar Grid</button>
+                <div id="export-status" class="status-message"></div>
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <div class="grid-info">
+                <p>Tamanho do Grid: <span id="grid-size-display">18 x 18 cm</span></p>
+                <p>Tamanho de cada foto: <span id="photo-size-display">Calculando...</span></p>
+            </div>
+            
+            <div id="photo-grid" class="photo-grid">
+                <div class="placeholder-message">
+                    Configure e gere o grid para começar
+                </div>
+            </div>
+        </div>
+
+        <div id="instructions" class="instructions">
+            <h3>Como usar:</h3>
+            <ol>
+                <li>Configure o tamanho do grid final desejado</li>
+                <li>Defina a quantidade de fotos e o formato</li>
+                <li>Clique em "Gerar Grid" para criar os espaços para as fotos</li>
+                <li>Clique em cada espaço para adicionar uma foto do seu computador</li>
+                <li>Ajuste o posicionamento das fotos conforme necessário</li>
+                <li>Clique em "Exportar Grid" para salvar como imagem</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Template para o espaço de foto -->
+    <template id="photo-space-template">
+        <div class="photo-space">
+            <div class="photo-container">
+                <img class="photo-preview" src="" alt="Preview da foto">
+                <div class="photo-controls">
+                    <button class="photo-zoom-in" title="Aumentar zoom">+</button>
+                    <button class="photo-zoom-out" title="Diminuir zoom">-</button>
+                    <button class="photo-rotate" title="Girar">↻</button>
+                    <button class="photo-remove" title="Remover">×</button>
+                </div>
+            </div>
+            <div class="photo-placeholder">
+                <span>Clique para adicionar foto</span>
+                <input type="file" class="photo-input" accept="image/*">
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
